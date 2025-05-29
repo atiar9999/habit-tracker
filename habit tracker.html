@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Habit Tracker - Full Month</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Basic reset and font */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif; /* Using Inter font */
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+    overflow-x: hidden;
+    /* Animated Background */
+    background: linear-gradient(135deg, #e0f7fa, #e1bee7, #c5cae9, #bbdefb, #b3e5fc);
+    background-size: 400% 400%;
+    animation: gradientAnimation 15s ease infinite;
+  }
+
+  /* Keyframe animation for the background */
+  @keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .container {
+    background: rgba(255, 255, 255, 0.9); /* Slightly more opaque for readability */
+    backdrop-filter: blur(15px); /* Stronger blur */
+    border-radius: 20px; /* More rounded */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+    padding: 40px 30px 90px; /* More padding */
+    width: 100%;
+    max-width: 1200px; /* Wider container */
+    margin: 20px; /* Margin to prevent sticking to edges on small screens */
+    overflow-x: auto;
+    transition: all 0.5s ease;
+    position: relative; /* For quote positioning */
+  }
+
+  h1 {
+    text-align: center;
+    font-weight: 800;
+    color: #4f46e5;
+    margin-bottom: 30px;
+    user-select: none;
+    font-size: 2.5rem; /* Larger heading */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+  }
+
+  /* Quote Display */
+  .quote-container {
+    text-align: center;
+    margin-bottom: 30px;
+    height: 70px; /* Fixed height to prevent layout shifts */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Hide overflow during fade */
+  }
+
+  .quote-text {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 5px;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 1s ease-in-out;
+  }
+
+  .quote-author {
+    font-size: 0.9rem;
+    color: #777;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 1s ease-in-out;
+  }
+
+  .quote-text.active, .quote-author.active {
+    opacity: 1;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    max-width: 400px; /* Slightly wider input */
+    padding: 16px 20px; /* More padding */
+    border-radius: 12px; /* More rounded */
+    border: 2px solid #cbd5e1;
+    font-size: 1.1rem; /* Larger font */
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+    margin-bottom: 20px; /* More margin */
+    display: block; /* Ensures it takes full width up to max-width */
+    margin-left: auto; /* Center the input */
+    margin-right: auto; /* Center the input */
+  }
+  input[type="text"]:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.6); /* Stronger shadow */
+  }
+
+  .buttons {
+    margin-bottom: 25px; /* More margin */
+    display: flex;
+    gap: 20px; /* More gap */
+    max-width: 420px; /* Adjusted max-width */
+    margin-left: auto; /* Center the buttons */
+    margin-right: auto; /* Center the buttons */
+  }
+
+  button {
+    flex: 1;
+    padding: 16px 0; /* More padding */
+    font-size: 1.1rem; /* Larger font */
+    font-weight: 700; /* Bolder */
+    border: none;
+    border-radius: 12px; /* More rounded */
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Default shadow */
+  }
+
+  button#addBtn {
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
+    color: white;
+    box-shadow: 0 8px 18px rgba(124, 58, 237, 0.4); /* Stronger shadow */
+  }
+  button#addBtn:hover {
+    transform: translateY(-3px) scale(1.02); /* Lift and slightly scale */
+    box-shadow: 0 12px 25px rgba(124, 58, 237, 0.6);
+  }
+  button#addBtn:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 6px 12px rgba(124, 58, 237, 0.3);
+  }
+
+  button#resetBtn {
+    position: fixed;
+    bottom: 30px; /* More space from bottom */
+    right: 30px; /* More space from right */
+    background: #ef4444;
+    color: white;
+    font-size: 0.9rem; /* Slightly larger font */
+    padding: 12px 18px; /* More padding */
+    border-radius: 50px;
+    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.4); /* Stronger shadow */
+    z-index: 100;
+  }
+  button#resetBtn:hover {
+    background-color: #dc2626; /* Darker red */
+    transform: translateY(-3px) scale(1.05); /* Lift and slightly scale */
+    box-shadow: 0 10px 20px rgba(220, 38, 38, 0.6);
+  }
+  button#resetBtn:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 6px 12px rgba(220, 38, 38, 0.3);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px; /* More space between rows */
+    margin-top: 0;
+    table-layout: fixed;
+    min-width: 600px; /* Ensure minimum width for table on small screens */
+  }
+
+  thead tr th {
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+    color: white;
+    font-weight: 700;
+    padding: 16px 8px; /* More padding */
+    border-radius: 12px 12px 0 0; /* More rounded */
+    user-select: none;
+    font-size: 0.95rem; /* Larger font */
+    min-width: 38px; /* Slightly wider columns */
+    text-align: center;
+    position: sticky; /* Sticky header */
+    top: 0;
+    z-index: 10;
+  }
+
+  tbody tr {
+    background: white;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1); /* Stronger shadow */
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  }
+  tbody tr:hover {
+    transform: translateY(-2px) scale(1.005); /* Lift slightly on hover */
+    background: #eef2ff;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+  }
+
+  tbody tr td {
+    text-align: center;
+    padding: 12px 6px; /* More padding */
+    vertical-align: middle;
+    font-size: 1rem; /* Larger font */
+    border: none;
+    min-width: 38px; /* Slightly wider columns */
+  }
+
+  .habit-name {
+    text-align: left;
+    font-weight: 600;
+    color: #1e293b;
+    padding-left: 20px; /* More padding */
+    min-width: 160px; /* Wider habit name column */
+  }
+
+  input[type="checkbox"] {
+    width: 22px; /* Larger checkbox */
+    height: 22px; /* Larger checkbox */
+    cursor: pointer;
+    accent-color: #6366f1;
+    transition: transform 0.2s ease;
+  }
+  input[type="checkbox"]:hover {
+    transform: scale(1.4); /* Larger hover effect */
+  }
+
+  tbody tr td:first-child {
+    border-radius: 12px 0 0 12px; /* More rounded */
+  }
+  tbody tr td:last-child {
+    border-radius: 0 12px 12px 0; /* More rounded */
+    font-weight: 700;
+    color: #4f46e5;
+  }
+
+  /* Scrollbar styling for the container */
+  .container::-webkit-scrollbar {
+    height: 10px; /* Thicker scrollbar */
+  }
+  .container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+  }
+  .container::-webkit-scrollbar-thumb {
+    background-color: #6366f1;
+    border-radius: 5px;
+    border: 2px solid #f1f1f1; /* Border to make it look like a thumb */
+  }
+  .container::-webkit-scrollbar-thumb:hover {
+    background-color: #5a5ceb;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .modal-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .modal-overlay.visible .modal-content {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .modal-content p {
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    color: #333;
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .modal-buttons button {
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: none; /* Remove default button shadow */
+  }
+
+  .modal-buttons button.confirm-btn {
+    background: #6366f1;
+    color: white;
+  }
+  .modal-buttons button.confirm-btn:hover {
+    background: #4f46e5;
+    transform: translateY(-2px);
+  }
+
+  .modal-buttons button.cancel-btn {
+    background: #e2e8f0;
+    color: #475569;
+  }
+  .modal-buttons button.cancel-btn:hover {
+    background: #cbd5e1;
+    transform: translateY(-2px);
+  }
+
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2rem;
+    }
+    .quote-text {
+      font-size: 1rem;
+    }
+    input[type="text"] {
+      max-width: 100%;
+    }
+    .buttons {
+      flex-direction: column;
+      max-width: 100%;
+    }
+    thead tr th, tbody tr td {
+      font-size: 0.8rem;
+      padding: 10px 4px;
+      min-width: 30px;
+    }
+    .habit-name {
+      min-width: 120px;
+      padding-left: 15px;
+    }
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+    button#resetBtn {
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      font-size: 0.85rem;
+    }
+    .container {
+      padding: 30px 20px 80px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.8rem;
+    }
+    .quote-text {
+      font-size: 0.9rem;
+    }
+    .quote-author {
+      font-size: 0.8rem;
+    }
+    input[type="text"] {
+      padding: 14px 16px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 14px 0;
+      font-size: 1rem;
+    }
+    thead tr th, tbody tr td {
+      font-size: 0.7rem;
+      padding: 8px 2px;
+      min-width: 25px;
+    }
+    .habit-name {
+      min-width: 90px;
+      padding-left: 10px;
+    }
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    button#resetBtn {
+      bottom: 15px;
+      right: 15px;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+    }
+    .container {
+      margin: 10px;
+      padding: 25px 15px 70px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Habit Tracker - Full Month</h1>
+
+  <div class="quote-container">
+    <p id="quoteText" class="quote-text"></p>
+    <p id="quoteAuthor" class="quote-author"></p>
+  </div>
+
+  <input id="habitInput" type="text" placeholder="Enter a new habit" />
+  <div class="buttons">
+    <button id="addBtn">Add Habit</button>
+  </div>
+
+  <table id="habitTable">
+    <thead>
+      <tr id="dateRow">
+        <th>Habit</th>
+        <th>Completion %</th>
+      </tr>
+    </thead>
+    <tbody id="habitBody">
+      </tbody>
+  </table>
+</div>
+
+<button id="resetBtn">Reset</button>
+
+<div id="customModalOverlay" class="modal-overlay">
+  <div class="modal-content">
+    <p id="modalMessage"></p>
+    <div class="modal-buttons">
+      <button id="modalConfirmBtn" class="confirm-btn">OK</button>
+      <button id="modalCancelBtn" class="cancel-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const habitInput = document.getElementById('habitInput');
+  const addBtn = document.getElementById('addBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const habitBody = document.getElementById('habitBody');
+  const dateRow = document.getElementById('dateRow');
+
+  const quoteTextElement = document.getElementById('quoteText');
+  const quoteAuthorElement = document.getElementById('quoteAuthor');
+
+  const customModalOverlay = document.getElementById('customModalOverlay');
+  const modalMessage = document.getElementById('modalMessage');
+  const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+  const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+  // Motivational Quotes
+  const motivationalQuotes = [
+    { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" },
+    { quote: "The journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
+    { quote: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { quote: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { quote: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+    { quote: "Your limitation—it's only your imagination.", author: "Unknown" },
+    { quote: "Push yourself, because no one else is going to do it for you.", author: "Unknown" },
+    { quote: "Great things never come from comfort zones.", author: "Unknown" },
+    { quote: "Dream it. Wish it. Do it.", author: "Unknown" },
+    { quote: "Success doesn’t just find you. You have to go out and get it.", author: "Unknown" },
+    { quote: "The harder you work for something, the greater you'll feel when you achieve it.", author: "Unknown" },
+    { quote: "Don’t stop when you’re tired. Stop when you’re done.", author: "Unknown" },
+    { quote: "Wake up with determination. Go to bed with satisfaction.", author: "Unknown" },
+    { quote: "Do something today that your future self will thank you for.", author: "Unknown" },
+    { quote: "Little things make big days.", author: "Unknown" },
+    { quote: "It’s going to be hard, but hard does not mean impossible.", author: "Unknown" },
+    { quote: "Don’t wait for opportunity. Create it.", author: "Unknown" },
+    { quote: "Sometimes we’re tested not to show our weaknesses, but to discover our strengths.", author: "Unknown" },
+    { quote: "The key to success is to focus on goals, not obstacles.", author: "Unknown" },
+    { quote: "Action is the foundational key to all success.", author: "Pablo Picasso" }
+  ];
+
+  let currentQuoteIndex = 0;
+
+  // Function to show a random quote with fade effect
+  function showRandomQuote() {
+    // Fade out current quote
+    quoteTextElement.classList.remove('active');
+    quoteAuthorElement.classList.remove('active');
+
+    setTimeout(() => {
+      // Pick a new random quote
+      currentQuoteIndex = Math.floor(Math.random() * motivationalQuotes.length);
+      const { quote, author } = motivationalQuotes[currentQuoteIndex];
+      quoteTextElement.textContent = `"${quote}"`;
+      quoteAuthorElement.textContent = `- ${author}`;
+
+      // Fade in new quote
+      quoteTextElement.classList.add('active');
+      quoteAuthorElement.classList.add('active');
+    }, 1000); // Wait for fade out to complete
+  }
+
+  // --- Habit Tracker Logic ---
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0-indexed
+
+  // Function to get the number of days in a given month and year
+  function daysInMonth(y, m) {
+    return new Date(y, m + 1, 0).getDate();
+  }
+  const daysThisMonth = daysInMonth(year, month);
+
+  // Load habits from local storage, or initialize as empty array
+  let habits = JSON.parse(localStorage.getItem('habitsFullMonth')) || [];
+
+  // Save habits to local storage
+  function saveHabits() {
+    localStorage.setItem('habitsFullMonth', JSON.stringify(habits));
+  }
+
+  // Render date headers (1 to daysThisMonth)
+  function renderDateHeaders() {
+    // Clear existing date headers, keeping the first (Habit) and last (Completion %)
+    while(dateRow.cells.length > 2) {
+      dateRow.deleteCell(1);
+    }
+    // Insert new date headers
+    for(let day = 1; day <= daysThisMonth; day++) {
+      const th = document.createElement('th');
+      th.textContent = day;
+      // Insert before the last cell (Completion %)
+      dateRow.insertBefore(th, dateRow.cells[dateRow.cells.length - 1]);
+    }
+  }
+
+  // Render all habits in the table
+  function renderHabits() {
+    habitBody.innerHTML = ''; // Clear existing habit rows
+    habits.forEach((habit, i) => {
+      const tr = document.createElement('tr');
+
+      // Habit Name cell
+      const nameTd = document.createElement('td');
+      nameTd.textContent = habit.name;
+      nameTd.className = 'habit-name';
+      tr.appendChild(nameTd);
+
+      // Checkboxes for each day
+      for(let day = 0; day < daysThisMonth; day++) {
+        const td = document.createElement('td');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        // Ensure habit.days array has enough elements, fill with false if not
+        if (habit.days.length <= day) {
+            habit.days[day] = false;
+        }
+        checkbox.checked = habit.days[day] || false; // Set checked state
+        checkbox.dataset.habitIndex = i; // Store habit index
+        checkbox.dataset.dayIndex = day; // Store day index
+        checkbox.addEventListener('change', handleCheckboxChange); // Attach event listener
+        td.appendChild(checkbox);
+        tr.appendChild(td);
+      }
+
+      // Completion Percentage cell
+      const completedCount = habit.days.filter(Boolean).length; // Count true values
+      const percent = daysThisMonth > 0 ? Math.round((completedCount / daysThisMonth) * 100) : 0;
+      const completionTd = document.createElement('td');
+      completionTd.textContent = percent + '%';
+      tr.appendChild(completionTd);
+
+      habitBody.appendChild(tr);
+    });
+  }
+
+  // Handle checkbox change event
+  function handleCheckboxChange(event) {
+    const habitIndex = parseInt(event.target.dataset.habitIndex);
+    const dayIndex = parseInt(event.target.dataset.dayIndex);
+    habits[habitIndex].days[dayIndex] = event.target.checked;
+    saveHabits();
+    renderHabits(); // Re-render to update completion percentages
+  }
+
+  // Add a new habit
+  function addHabit() {
+    const name = habitInput.value.trim();
+    if(name === '') {
+      showAlert('Please enter a habit name.');
+      return;
+    }
+    // Initialize days array with false for all days of the month
+    const daysArray = new Array(daysThisMonth).fill(false);
+    habits.push({ name, days: daysArray });
+    habitInput.value = ''; // Clear input field
+    saveHabits();
+    renderHabits();
+  }
+
+  // Reset all habits
+  function resetHabits() {
+    showConfirm("Are you sure you want to reset all habits? This cannot be undone.", () => {
+      habits = []; // Clear all habits
+      saveHabits();
+      renderHabits();
+    });
+  }
+
+  // --- Custom Modal Functions ---
+  let confirmCallback = null;
+
+  // Show an alert modal
+  function showAlert(message) {
+    modalMessage.textContent = message;
+    modalConfirmBtn.style.display = 'inline-block'; // Show OK button
+    modalCancelBtn.style.display = 'none'; // Hide Cancel button
+    customModalOverlay.classList.add('visible');
+    modalConfirmBtn.onclick = () => {
+      customModalOverlay.classList.remove('visible');
+    };
+  }
+
+  // Show a confirmation modal
+  function showConfirm(message, callback) {
+    modalMessage.textContent = message;
+    modalConfirmBtn.style.display = 'inline-block'; // Show OK button
+    modalCancelBtn.style.display = 'inline-block'; // Show Cancel button
+    customModalOverlay.classList.add('visible');
+    confirmCallback = callback; // Store the callback
+
+    modalConfirmBtn.onclick = () => {
+      customModalOverlay.classList.remove('visible');
+      if (confirmCallback) {
+        confirmCallback();
+      }
+      confirmCallback = null; // Clear callback
+    };
+
+    modalCancelBtn.onclick = () => {
+      customModalOverlay.classList.remove('visible');
+      confirmCallback = null; // Clear callback
+    };
+  }
+
+
+  // --- Event Listeners ---
+  addBtn.addEventListener('click', addHabit);
+  resetBtn.addEventListener('click', resetHabits);
+
+  habitInput.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent default form submission if input was in a form
+      addHabit();
+    }
+  });
+
+  // Initial rendering calls
+  renderDateHeaders();
+  renderHabits();
+  showRandomQuote(); // Display initial quote
+  setInterval(showRandomQuote, 8000); // Change quote every 8 seconds
+</script>
+</body>
+</html>
